@@ -68,7 +68,7 @@ class Publish:
 
 						data = json.loads(self.publish_list.get())
 						data.update({'gateway': {'uuid': self.uuid}, 'tries': i})
-						c.publish(self.topic, json.dumps(data))
+						c.publish(self.topic, json.dumps(data).encode())
 						c.disconnect()
 
 						self.publish_list.delete()
