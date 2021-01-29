@@ -67,7 +67,10 @@ class Publish:
 						c.connect()
 
 						data = json.loads(self.publish_list.get())
-						data.update({'gateway': {'uuid': self.uuid}, 'tries': i})
+						if 'gateway' in data:
+							data.update({'tries': i})
+						else:
+							data.update({'gateway': {'uuid': self.uuid}, 'tries': i})
 						c.publish(self.topic, json.dumps(data).encode())
 						c.disconnect()
 
