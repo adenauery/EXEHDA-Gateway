@@ -39,8 +39,8 @@ class Scheduler:
 	def scheduler(self):
 		configs = get_configs()
 		for device in configs['devices']:
-			self.init_driver(device)
 			if device['status'] == True:
+				self.init_driver(device)
 				period = device['operation_time']['period']
 				period_steps = set(device['operation_time']['period_steps'])
 				pin = device['pin'] if 'pin' in device else None
