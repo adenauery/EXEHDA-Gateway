@@ -6,7 +6,6 @@ class List(object):
 	def __init__(self):
 		self.list = []
 		self.lock = _thread.allocate_lock()
-		file = open('buffer.txt', 'w+')
 
 	def insert(self, elem):
 		self.lock.acquire()
