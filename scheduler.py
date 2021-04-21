@@ -40,12 +40,14 @@ class Scheduler:
 		configs = get_configs()
 		for device in configs['devices']:
 			if device['status'] == True:
-				self.init_driver(device)
 				period = device['operation_time']['period']
-				period_steps = set(device['operation_time']['period_steps'])
-				pin = device['pin'] if 'pin' in device else None
-				mcron.insert(period, period_steps, device['uuid'], self.callback(device['driver'], "publication", device['uuid'], pin))
-
+				if type(period) is int and period is not 0:
+					period_steps = set(device['operation_time']['period_steps'])
+					pin = device['pin'] if 'pin' in device else None
+					self.init_driver(device)
+					mcron.insert(period, period_steps, device['uuid'], self.callback(device['driver'], "publication", device['uuid'], pin))
+				else:
+					log("Scheduler: period of " + device['driver'] + " driver is invalid")
 	def start(self):
 		print("Gateway operando!")
 		configs = get_configs()
