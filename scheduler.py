@@ -39,7 +39,7 @@ class Scheduler:
 	def scheduler(self):
 		configs = get_configs()
 		for device in configs['devices']:
-			if device['status'] == True:
+			if device['status'] == True and 'operation_time' in device:
 				period = device['operation_time']['period']
 				if type(period) is int and period is not 0:
 					period_steps = set(device['operation_time']['period_steps'])
@@ -69,18 +69,18 @@ class Scheduler:
 								break
 						if not device:
 							break
+						
+						if device['status'] == True:
+							pin = device['pin'] if 'pin' in device else None
+							action = data['action'] if 'action' in data else None
 
-						pin = device['pin'] if 'pin' in device else None
-						action = data['action'] if 'action' in data else None
-
-						cb = self.callback(device['driver'], "operation_reply", device['uuid'], pin, action, identifier=data['identifier'])
-						cb()
+							cb = self.callback(device['driver'], "operation_reply", device['uuid'], pin, action, identifier=data['identifier'])
+							cb()
 					elif subscription_type == "acknowledgement":
 						configs.update({"type": "identification", "gathered_at": get_date()})
 						self.publish_list.insert(json.dumps(configs))
 					else:
 						log("Scheduler: subscription type error")
-
 					self.subscribe_list.delete()
 				time.sleep(0.5)
 			except Exception as e:
