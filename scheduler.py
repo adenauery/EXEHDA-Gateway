@@ -76,6 +76,9 @@ class Scheduler:
 
 							cb = self.callback(device['driver'], "operation_reply", device['uuid'], pin, action, identifier=data['identifier'])
 							cb()
+						else:
+							data = {"uuid": device['uuid'], "data": "driver_not_enabled", "type": "operation_reply", "gathered_at": get_date(), "identifier": data['identifier']}
+							self.publish_list.insert(json.dumps(data))
 					elif subscription_type == "acknowledgement":
 						configs.update({"type": "identification", "gathered_at": get_date()})
 						self.publish_list.insert(json.dumps(configs))
