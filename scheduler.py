@@ -7,12 +7,12 @@ from utils import get_configs, get_date, log
 
 
 class Scheduler:
-	def __init__(self, subscribe_list, publish_list):
+	def __init__(self, subscribe_stack, publish_stack):
 		mcron.init_timer()
 		mcron.remove_all()
 
-		self.subscribe_list = subscribe_list
-		self.publish_list = publish_list
+		self.subscribe_stack = subscribe_stack
+		self.publish_stack = publish_stack
 		self.scheduler()
 
 	def callback(self, driver, cb_type, uuid, pin = None, write = None, **kwargs):
@@ -25,7 +25,7 @@ class Scheduler:
 				if kwargs:
 					data.update(kwargs)
 
-				self.publish_list.insert(json.dumps(data))
+				self.publish_stack.insert(json.dumps(data))
 			except Exception as e:
 				log("Scheduler-callback: {}".format(e))
 		return wrapper
@@ -52,13 +52,13 @@ class Scheduler:
 		print("Gateway operando!")
 		configs = get_configs()
 		configs.update({"type": "identification", "gathered_at": get_date()})
-		self.publish_list.insert(json.dumps(configs))
+		self.publish_stack.insert(json.dumps(configs))
 
 		while True:
 			try:
-				while self.subscribe_list.length() > 0:
-					data = json.loads(self.subscribe_list.get())
-					self.subscribe_list.delete()
+				while self.subscribe_stack.length() > 0:
+					data = json.loads(self.subscribe_stack.get())
+					self.subscribe_stack.delete()
 					if 'type' in data:
 						subscription_type = data['type']
 						configs = get_configs()
@@ -81,12 +81,12 @@ class Scheduler:
 									cb()
 								else:
 									data = {"uuid": device['uuid'], "data": "driver_not_enabled", "type": "operation_reply", "gathered_at": get_date(), "identifier": data['identifier']}
-									self.publish_list.insert(json.dumps(data))
+									self.publish_stack.insert(json.dumps(data))
 							else:
 								log("Scheduler: json 'uuid' or 'identifier' field not found")
 						elif subscription_type == "acknowledgement":
 							configs.update({"type": "identification", "gathered_at": get_date()})
-							self.publish_list.insert(json.dumps(configs))
+							self.publish_stack.insert(json.dumps(configs))
 						else:
 							log("Scheduler: subscription type error")
 					else:
@@ -97,4 +97,4 @@ class Scheduler:
 					log("Scheduler: faltando chave identifier")
 				else:	
 					log("Scheduler: {}".format(e))
-				self.subscribe_list.delete()
+				self.subscribe_stack.delete()

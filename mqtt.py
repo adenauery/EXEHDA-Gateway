@@ -8,7 +8,7 @@ from utils import get_configs, log, get_date
 
 
 class Subscribe:
-	def __init__(self, subscribe_list):
+	def __init__(self, subscribe_stack):
 		configs = get_configs()
 
 		self.ip = configs['broker_mqtt']['ip']
@@ -18,11 +18,11 @@ class Subscribe:
 		self.topic = bytes("GW_{}".format(configs['gateway']['uuid']), "utf-8")
 		self.uuid = configs['gateway']['uuid']
 
-		self.subscribe_list = subscribe_list
+		self.subscribe_stack = subscribe_stack
 
 	def callback(self, _, msg):
 		receive = str(bytes(msg), "utf-8")
-		self.subscribe_list.insert(receive)
+		self.subscribe_stack.insert(receive)
 
 	def connect(self):
 		c = MQTTClient(self.uuid, self.ip, self.port, self.user, self.password, keepalive=120)
@@ -43,7 +43,7 @@ class Subscribe:
 
 
 class Publish:
-	def __init__(self, publish_list):
+	def __init__(self, publish_stack):
 		configs = get_configs()
 
 		self.ip = configs['broker_mqtt']['ip']
@@ -53,20 +53,20 @@ class Publish:
 		self.topic = bytes(configs['broker_mqtt']['topic'], "utf-8")
 		self.uuid = configs['gateway']['uuid']
 
-		self.publish_list = publish_list
+		self.publish_stack = publish_stack
 		self.wdt = WDT(timeout=1000*60*15)
 
 	def connect(self):
 		while True:
 			tried_send = 0
-			while self.publish_list.length() > 0:
+			while self.publish_stack.length() > 0:
 				i = 1
 				while i < 9:
 					try:
 						c = MQTTClient(self.topic, self.ip, self.port, self.user, self.password)
 						c.connect()
 
-						data = json.loads(self.publish_list.get())
+						data = json.loads(self.publish_stack.get())
 						if 'gateway' in data:
 							data.update({'tries': i})
 						else:
@@ -74,7 +74,7 @@ class Publish:
 						c.publish(self.topic, json.dumps(data).encode())
 						c.disconnect()
 
-						self.publish_list.delete()
+						self.publish_stack.delete()
 						tried_send = 0
 
 						self.wdt.feed()
