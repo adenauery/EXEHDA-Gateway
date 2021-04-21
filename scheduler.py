@@ -59,32 +59,38 @@ class Scheduler:
 				while self.subscribe_list.length() > 0:
 					data = json.loads(self.subscribe_list.get())
 					self.subscribe_list.delete()
-					subscription_type = data['type']
-					configs = get_configs()
+					if 'type' in data:
+						subscription_type = data['type']
+						configs = get_configs()
 
-					if subscription_type == "operation":
-						device = None
-						for d in configs['devices']:
-							if d['uuid'] == data['uuid']:
-								device = d
-								break
-						if not device:
-							break
-						
-						if device['status'] == True:
-							pin = device['pin'] if 'pin' in device else None
-							action = data['action'] if 'action' in data else None
+						if subscription_type == "operation":
+							if 'uuid' in data and 'identifier' in data:
+								device = None
+								for d in configs['devices']:
+									if d['uuid'] == data['uuid']:
+										device = d
+										break
+								if not device:
+									break
 
-							cb = self.callback(device['driver'], "operation_reply", device['uuid'], pin, action, identifier=data['identifier'])
-							cb()
+								if device['status'] == True:
+									pin = device['pin'] if 'pin' in device else None
+									action = data['action'] if 'action' in data else None
+
+									cb = self.callback(device['driver'], "operation_reply", device['uuid'], pin, action, identifier=data['identifier'])
+									cb()
+								else:
+									data = {"uuid": device['uuid'], "data": "driver_not_enabled", "type": "operation_reply", "gathered_at": get_date(), "identifier": data['identifier']}
+									self.publish_list.insert(json.dumps(data))
+							else:
+								log("Scheduler: json 'uuid' or 'identifier' field not found")
+						elif subscription_type == "acknowledgement":
+							configs.update({"type": "identification", "gathered_at": get_date()})
+							self.publish_list.insert(json.dumps(configs))
 						else:
-							data = {"uuid": device['uuid'], "data": "driver_not_enabled", "type": "operation_reply", "gathered_at": get_date(), "identifier": data['identifier']}
-							self.publish_list.insert(json.dumps(data))
-					elif subscription_type == "acknowledgement":
-						configs.update({"type": "identification", "gathered_at": get_date()})
-						self.publish_list.insert(json.dumps(configs))
+							log("Scheduler: subscription type error")
 					else:
-						log("Scheduler: subscription type error")
+						log("Scheduler: json 'type' field not found")
 				time.sleep(0.5)
 			except Exception as e:
 				if e == "identifier":
