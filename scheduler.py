@@ -93,8 +93,5 @@ class Scheduler:
 						log("Scheduler: json 'type' field not found")
 				time.sleep(0.5)
 			except Exception as e:
-				if e == "identifier":
-					log("Scheduler: faltando chave identifier")
-				else:	
-					log("Scheduler: {}".format(e))
+				log("Scheduler: {}".format(e))
 				self.subscribe_stack.delete()
