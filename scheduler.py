@@ -58,6 +58,7 @@ class Scheduler:
 			try:
 				while self.subscribe_list.length() > 0:
 					data = json.loads(self.subscribe_list.get())
+					self.subscribe_list.delete()
 					subscription_type = data['type']
 					configs = get_configs()
 
@@ -84,7 +85,6 @@ class Scheduler:
 						self.publish_list.insert(json.dumps(configs))
 					else:
 						log("Scheduler: subscription type error")
-					self.subscribe_list.delete()
 				time.sleep(0.5)
 			except Exception as e:
 				if e == "identifier":
