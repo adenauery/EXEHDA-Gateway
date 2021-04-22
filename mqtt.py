@@ -30,16 +30,18 @@ class Subscribe:
 			c.set_callback(self.callback)
 			c.connect()
 			c.subscribe(self.topic)
-		
-			while True:
-				if True:
-					c.wait_msg()
-				else:
-					c.check_msg()
-					time.sleep(1)
+			try:
+				while True:
+					if True:
+						c.wait_msg()
+					else:
+						c.check_msg()
+						time.sleep(1)
+			except Exception as e:
+				log("Subscribe: {}".format(e))
+				c.disconnect()
 		except Exception as e:
-			log("Subscribe: {}".format(e))
-			c.disconnect()
+			log("Subscribe_Connection: {}".format(e))
 
 
 class Publish:
