@@ -25,24 +25,26 @@ class Subscribe:
 		self.subscribe_stack.insert(receive)
 
 	def connect(self):
-		try:
-			c = MQTTClient(self.uuid, self.ip, self.port, self.user, self.password, keepalive=120)
-			c.set_callback(self.callback)
-			c.connect()
-			c.subscribe(self.topic)
+		while True:
 			try:
-				while True:
-					if True:
-						c.wait_msg()
-					else:
-						c.check_msg()
-						time.sleep(1)
+				c = MQTTClient(self.uuid, self.ip, self.port, self.user, self.password, keepalive=120)
+				c.set_callback(self.callback)
+				c.connect()
+				c.subscribe(self.topic)
+				try:
+					while True:
+						if True:
+							c.wait_msg()
+						else:
+							c.check_msg()
+							time.sleep(1)
+				except Exception as e:
+					log("Subscribe: {}".format(e))
+					c.disconnect()
 			except Exception as e:
-				log("Subscribe: {}".format(e))
-				c.disconnect()
-		except Exception as e:
-			log("Subscribe_Connection: {}".format(e))
-
+				log("Subscribe_Connection: {}".format(e))
+			
+			time.sleep(5)
 
 class Publish:
 	def __init__(self, publish_stack):
