@@ -25,12 +25,12 @@ class Subscribe:
 		self.subscribe_stack.insert(receive)
 
 	def connect(self):
-		c = MQTTClient(self.uuid, self.ip, self.port, self.user, self.password, keepalive=120)
-		c.set_callback(self.callback)
-		c.connect()
-		c.subscribe(self.topic)
-
 		try:
+			c = MQTTClient(self.uuid, self.ip, self.port, self.user, self.password, keepalive=120)
+			c.set_callback(self.callback)
+			c.connect()
+			c.subscribe(self.topic)
+		
 			while True:
 				if True:
 					c.wait_msg()
@@ -82,11 +82,11 @@ class Publish:
 					except Exception:
 						i += 1
 						failed_send = True
-						time.sleep(1)
+						time.sleep(5)
 				
 				# no persistency for ack answer
 				if failed_send and data['type'] != 'identification':
 					self.publish_stack.write_buffer(json.dumps(data))
 				self.publish_stack.delete()
 
-			time.sleep(1)
+			time.sleep(5)
