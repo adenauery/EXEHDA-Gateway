@@ -72,7 +72,6 @@ class Stack(object):
 				else:
 					break
 		finally:
-			print(len(self.stack))
 			file.close()	
 			self.lock.release()
 
