@@ -25,6 +25,7 @@ class Subscribe:
 		self.subscribe_stack.insert(receive)
 
 	def connect(self):
+		fail_notified = False
 		while True:
 			try:
 				c = MQTTClient(self.uuid, self.ip, self.port, self.user, self.password, keepalive=120)
@@ -33,17 +34,21 @@ class Subscribe:
 				c.subscribe(self.topic)
 				try:
 					while True:
+						fail_notified = False
 						if True:
 							c.wait_msg()
 						else:
 							c.check_msg()
 							time.sleep(1)
 				except Exception as e:
-					log("Subscribe: {}".format(e))
-					c.disconnect()
+					if not fail_notified:
+						fail_notified = True
+						log("Subscribe: {}".format(e))
+						c.disconnect()
 			except Exception as e:
-				log("Subscribe_Connection: {}".format(e))
-			
+				if not fail_notified:
+					fail_notified = True
+					log("Subscribe_Connection: {}".format(e))
 			time.sleep(5)
 
 class Publish:
