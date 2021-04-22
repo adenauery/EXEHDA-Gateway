@@ -66,10 +66,13 @@ class Publish:
 				i = 1
 				while i < 9:
 					try:
-						if 'gateway' in data:
-							data.update({'tries': i})
+						if 'tries' in data:
+							data.update({'tries': data['tries'] + 1})
 						else:
-							data.update({'gateway': {'uuid': self.uuid}, 'tries': i})
+							data.update({'tries': 1})
+						
+						if not 'gateway' in data:
+							data.update({'gateway': {'uuid': self.uuid}})
 
 						c = MQTTClient(self.topic, self.ip, self.port, self.user, self.password)
 						c.connect()
