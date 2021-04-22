@@ -58,32 +58,35 @@ class Publish:
 
 	def connect(self):
 		while True:
-			tried_send = 0
+			failed_send = False
 			while self.publish_stack.length() > 0:
+				data = json.loads(self.publish_stack.get())
 				i = 1
 				while i < 9:
 					try:
-						c = MQTTClient(self.topic, self.ip, self.port, self.user, self.password)
-						c.connect()
-
-						data = json.loads(self.publish_stack.get())
 						if 'gateway' in data:
 							data.update({'tries': i})
 						else:
 							data.update({'gateway': {'uuid': self.uuid}, 'tries': i})
+
+						c = MQTTClient(self.topic, self.ip, self.port, self.user, self.password)
+						c.connect()
 						c.publish(self.topic, json.dumps(data).encode())
 						c.disconnect()
 
-						self.publish_stack.delete()
-						tried_send = 0
+						failed_send = False
 
 						self.wdt.feed()
 						break
 
-					except Exception as e:
-						if tried_send == 0:
-							log("Publish: {}".format(e))
-							tried_send = 1
+					except Exception:
 						i += 1
-						time.sleep(5)
-			time.sleep(5)
+						failed_send = True
+						time.sleep(1)
+				
+				# no persistency for ack answer
+				if failed_send and data['type'] != 'identification':
+					self.publish_stack.write_buffer(json.dumps(data))
+				self.publish_stack.delete()
+
+			time.sleep(1)
