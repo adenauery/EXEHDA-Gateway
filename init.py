@@ -8,6 +8,7 @@ from main.scheduler import Scheduler
 def start():
 	publish_stack = Stack()
 	publish_stack.read_buffer()
+	publish_stack.clear_buffer()
 
 	subscribe_stack = Stack()
 

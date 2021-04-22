@@ -47,17 +47,19 @@ class Stack(object):
 			self.lock.release()
 			return 1
 
-	def write_buffer(self):
+	def write_buffer(self, data):
+		self.lock.acquire()
+		file = open('buffer.txt', 'a')
+		file.write(data + "\n")
+		file.close()
+		self.lock.release()
+
+	def clear_buffer(self):
 		self.lock.acquire()
 		file = open('buffer.txt', 'w')
-		try:
-			while len(self.stack) > 0:
-				msg = self.stack[0]
-				del self.stack[0]
-				file.write(str(msg) + "\n")
-		finally:
-			file.close()
-			self.lock.release()
+		file.write('')
+		file.close()
+		self.lock.release()
 
 	def read_buffer(self):
 		self.lock.acquire()
@@ -70,18 +72,18 @@ class Stack(object):
 				else:
 					break
 		finally:
-			file.close()
+			print(len(self.stack))
+			file.close()	
 			self.lock.release()
 
 	def write_stack_buffer(self):
 		self.lock.acquire()
 		file = open('buffer.txt', 'w')
 		try:
-			i = 0
-			while i < len(self.stack):
-				data = self.stack[i]
-				file.write("{}\n".format(data))
-				i += 1
+			while len(self.stack) > 0:
+				msg = self.stack[0]
+				del self.stack[0]
+				file.write(str(msg) + "\n")
 		finally:
 			file.close()
 			self.lock.release()
