@@ -48,7 +48,7 @@ class Subscribe:
 			except Exception as e:
 				if not fail_notified:
 					fail_notified = True
-					log("Subscribe_Connection: {}".format(e))
+					log("Subscribe-connection: {}".format(e))
 			time.sleep(5)
 
 class Publish:

@@ -49,7 +49,8 @@ class Scheduler:
 				else:
 					log("Scheduler: period of " + device['driver'] + " driver is invalid")
 	def start(self):
-		print("Gateway operando!")
+		log("Scheduler: EXEHDAGateway operating")
+		
 		configs = get_configs()
 		configs.update({"type": "identification", "gathered_at": get_date()})
 		self.publish_stack.insert(json.dumps(configs))
