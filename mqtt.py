@@ -67,38 +67,43 @@ class Publish:
 
 	def connect(self):
 		while True:
-			failed_send = False
-			while self.publish_stack.length() > 0:
-				data = json.loads(self.publish_stack.get())
-				i = 1
-				while i < 9:
-					try:
-						if 'tries' in data:
-							data.update({'tries': data['tries'] + 1})
-						else:
-							data.update({'tries': 1})
-						
-						if not 'gateway' in data:
-							data.update({'gateway': {'uuid': self.uuid}})
+			try:
+				while self.publish_stack.length() > 0:
+					failed_send = False
+					data = json.loads(self.publish_stack.get())
+					i = 1
+					while i < 9:
+						try:
+							if 'tries' in data:
+								data.update({'tries': data['tries'] + 1})
+							else:
+								data.update({'tries': 1})
+							
+							if not 'gateway' in data:
+								data.update({'gateway': {'uuid': self.uuid}})
 
-						c = MQTTClient(self.topic, self.ip, self.port, self.user, self.password)
-						c.connect()
-						c.publish(self.topic, json.dumps(data).encode())
-						c.disconnect()
+							c = MQTTClient(self.topic, self.ip, self.port, self.user, self.password)
+							c.connect()
+							c.publish(self.topic, json.dumps(data).encode())
+							c.disconnect()
 
-						failed_send = False
+							failed_send = False
 
-						self.wdt.feed()
-						break
+							self.wdt.feed()
+							break
 
-					except Exception:
-						i += 1
-						failed_send = True
-						time.sleep(5)
-				
-				# no persistency for ack answer
-				if failed_send and data['type'] != 'identification':
-					self.publish_stack.write_buffer(json.dumps(data))
+						except Exception:
+							i += 1
+							failed_send = True
+							time.sleep(5)
+					
+					# no persistency for ack answer
+					if failed_send and data['type'] != 'identification':
+						self.publish_stack.write_buffer(json.dumps(data))
+					self.publish_stack.delete()
+
+				# TODO: verify necessity of sleep here
+			except Exception as e:
 				self.publish_stack.delete()
-
+				log("Publish-connect: {}".format(e))
 			time.sleep(5)
