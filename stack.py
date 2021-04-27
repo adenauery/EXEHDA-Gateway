@@ -2,63 +2,64 @@ import _thread
 import os
 
 
-class List(object):
+class Stack(object):
 	def __init__(self):
-		self.list = []
+		self.stack = []
 		self.lock = _thread.allocate_lock()
-		file = open('buffer.txt', 'w+')
 
 	def insert(self, elem):
 		self.lock.acquire()
 		try:
-			if len(self.list) == 100:
-				del self.list[0]
-			self.list.append(elem)
+			if len(self.stack) == 100:
+				del self.stack[0]
+			self.stack.append(elem)
 		except Exception:
-			del self.list[0]
-			self.list.append(elem)
+			del self.stack[0]
+			self.stack.append(elem)
 		self.lock.release()
 
 	def delete(self):
 		self.lock.acquire()
-		elem = self.list[0]
-		del self.list[0]
+		elem = self.stack[0]
+		del self.stack[0]
 		self.lock.release()
 		return elem
 
 	def get(self):
 		self.lock.acquire()
-		elem = self.list[0]
+		elem = self.stack[0]
 		self.lock.release()
 		return elem
 
 	def length(self):
 		self.lock.acquire()
-		list_length = len(self.list)
+		stack_length = len(self.stack)
 		self.lock.release()
-		return list_length
+		return stack_length
 
 	def length_add(self, elem):
 		self.lock.acquire()
-		if len(self.list) == 0:
+		if len(self.stack) == 0:
 			self.lock.release()
 			return 0
 		else:
-			self.list.append(elem)
+			self.stack.append(elem)
 			self.lock.release()
 			return 1
 
-	def write_buffer(self):
+	def write_buffer(self, data):
+		self.lock.acquire()
+		file = open('buffer.txt', 'a')
+		file.write(data + "\n")
+		file.close()
+		self.lock.release()
+
+	def clear_buffer(self):
 		self.lock.acquire()
 		file = open('buffer.txt', 'w')
-		try:
-			while len(self.list) > 0:
-				msg = self.list[0]
-				del self.list[0]
-				file.write(str(msg) + "\n")
-		finally:
-			file.close()
-			self.lock.release()
+		file.write('')
+		file.close()
+		self.lock.release()
 
 	def read_buffer(self):
 		self.lock.acquire()
@@ -67,22 +68,21 @@ class List(object):
 			while True:
 				line = file.readline().rstrip("\n")
 				if len(line) != 0:
-					self.list.append(line)
+					self.stack.append(line)
 				else:
 					break
 		finally:
-			file.close()
+			file.close()	
 			self.lock.release()
 
-	def write_list_buffer(self):
+	def write_stack_buffer(self):
 		self.lock.acquire()
 		file = open('buffer.txt', 'w')
 		try:
-			i = 0
-			while i < len(self.list):
-				data = self.list[i]
-				file.write("{}\n".format(data))
-				i += 1
+			while len(self.stack) > 0:
+				msg = self.stack[0]
+				del self.stack[0]
+				file.write(str(msg) + "\n")
 		finally:
 			file.close()
 			self.lock.release()
