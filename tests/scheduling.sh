@@ -1,17 +1,33 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./random_hash.sh
+. ./default_data.sh
 
-GATEWAY=GW_031da950-3c9c-4507-8a84-ad88ae8442a3
-DEVICE=eec4484e-3b56-4c9e-8c94-26b8c5dce72a
+GATEWAY=$DEFAULT_GATEWAY
+DEVICE=$DEFAULT_DEVICE
 IDENTIFIER=$(random_hash)
-TIMESTAMP=$(date -d "+30 seconds" +%s)
+TIMESTAMP=$(date -d "+2 minutes" +%s)
 
 echo "Gateway:    "$GATEWAY
 echo "Device:     "$DEVICE
 echo "Identifier: "$IDENTIFIER
+echo "Topic:      "$DEFAULT_TOPIC
 echo "Timestamp:  "$TIMESTAMP
 echo ''
 
-mosquitto_pub -t "$GATEWAY" -m "{\"type\":\"scheduling\", \"actions\": [{\"type\":\"create\", \"identifier\": \"$IDENTIFIER\", \"uuid\": \"$DEVICE\", \"timestamp\": $TIMESTAMP, \"write\": 1}]}"
-mosquitto_sub -t i2wac
+if [[ $1 == "--create" ]]
+then
+
+	mosquitto_pub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t "$GATEWAY" -m "{\"type\":\"scheduling\", \"schedules\": [{\"type\":\"create\", \"identifier\": \"$IDENTIFIER\", \"uuid\": \"$DEVICE\", \"timestamp\": $TIMESTAMP, \"write\": 1}]}"
+elif [[ $1 == "--read" ]]
+then
+	mosquitto_pub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t "$GATEWAY" -m "{\"type\":\"scheduling\", \"schedules\": [{\"type\":\"read\", \"identifier\": \"$IDENTIFIER\"]}"
+elif [[ $1 == "--update" ]]
+then
+	mosquitto_pub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t "$GATEWAY" -m "{\"type\":\"scheduling\", \"schedules\": [{\"type\":\"update\", \"identifier\": \"$2\", \"data\": {\"write\": 0}]}"
+elif [[ $1 == "--delete" ]]
+then
+	mosquitto_pub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t "$GATEWAY" -m "{\"type\":\"scheduling\", \"schedules\": [{\"type\":\"delete\", \"identifier\": \"$2\"]}"
+fi
+
+mosquitto_sub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t $DEFAULT_TOPIC

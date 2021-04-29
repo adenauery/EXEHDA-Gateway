@@ -1,15 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./random_hash.sh
+. ./default_data.sh
 
-GATEWAY=GW_031da950-3c9c-4507-8a84-ad88ae8442a3
-DEVICE=eec4484e-3b56-4c9e-8c94-26b8c5dce72a
+GATEWAY=$DEFAULT_GATEWAY
+DEVICE=$DEFAULT_DEVICE
 IDENTIFIER=$(random_hash)
 
 echo "Gateway:    "$GATEWAY
 echo "Device:     "$DEVICE
 echo "Identifier: "$IDENTIFIER
+echo "Topic:      "$DEFAULT_TOPIC
 echo ''
 
-mosquitto_pub -t "$GATEWAY" -m "{\"type\":\"operation\", \"uuid\": \"$DEVICE\", \"identifier\": \"$IDENTIFIER\"}"
-mosquitto_sub -t i2wac
+mosquitto_pub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t "$GATEWAY" -m "{\"type\":\"operation\", \"uuid\": \"$DEVICE\", \"identifier\": \"$IDENTIFIER\", \"write\": 1}"
+mosquitto_sub -h "$DEFAULT_BROKER_HOST" -u "$DEFAULT_BROKER_USER" -P "$DEFAULT_BROKER_PSWD" -t $DEFAULT_TOPIC
