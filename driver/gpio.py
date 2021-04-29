@@ -6,4 +6,4 @@ class DriverGPIO(DriverStrategy):
 	def run(self, **kwargs):
 		sensor = Pin(kwargs['pin'], Pin.OUT)
 		sensor.value(kwargs['write'])
-		return "successful"
+		return "successful, written: " + str(kwargs['write'])
