@@ -2,8 +2,8 @@ import json
 import time
 from json import dumps
 from umqtt.simple import MQTTClient
-from machine import WDT
 
+from wdt import Watchdog
 from utils import get_configs, log, get_date
 
 
@@ -63,7 +63,16 @@ class Publish:
 		self.uuid = configs['gateway']['uuid']
 
 		self.publish_stack = publish_stack
-		self.wdt = WDT(timeout=1000*60*15)
+		self.devices = configs['devices']
+		self.startWDT()
+	
+	def startWDT(self):
+		time = float('inf')
+		for device in self.devices:
+			if device['status'] and device['operation_time'] and device['operation_time']['period'] and device['operation_time']['period_steps'][0] == 0:
+				if 0 < device['operation_time']['period'] < time:
+					time = device['operation_time']['period']
+		self.wdt = Watchdog(time * 2 + 10)
 
 	def connect(self):
 		while True:
